@@ -1,0 +1,46 @@
+# Allowlist: everything is ignored unless it's allowed below.
+# A new top-level file or folder needs its own "!" line (see CONTRIBUTING.md).
+/*
+
+# Package, tests, demo site and CI
+!/src/
+!/tests/
+!/demo/
+!/.github/
+
+# Project configuration
+!/.gitignore
+!/pyproject.toml
+!/uv.lock
+!/package.json
+!/package-lock.json
+!/justfile
+!/testmanage.py
+!/ruff.toml
+!/prek.toml
+!/prettier.config.js
+!/stylelint.config.mjs
+!/.coveragerc
+!/.editorconfig
+!/.git-blame-ignore-revs
+!/.node-version
+!/.python-version
+!/.prettierignore
+!/.stylelintignore
+
+# Docs and license
+!/README.md
+!/CHANGELOG.md
+!/CONTRIBUTING.md
+!/SECURITY.md
+!/LICENSE
+!/AGENTS.md
+
+# Still ignored inside the allowed folders
+__pycache__/
+*.py[co]
+.DS_Store
+*.mo
+*.db
+*.sqlite3
+/demo/media/
