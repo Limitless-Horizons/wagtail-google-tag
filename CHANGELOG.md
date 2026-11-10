@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-11-10
+
 ### Added
 
 - Google tag settings for each site in the Wagtail admin (Settings → Google tag): measurement ID, Europe consent defaults, Google Ads, signed-in users, email and phone links, and debug mode.
@@ -16,3 +18,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `window.wagtailGoogleTag.track()` and `window.wagtailGoogleTag.consent()`, and the `wagtail-cookie-consent:change` event for consent banners.
 - Click events from `data-google-tag-event` and `data-google-tag-params`, and `contact_link_click` for email and phone links.
 - Support for Wagtail 7.4, 8.0 and 8.1.
+
+[Unreleased]: https://github.com/Limitless-Horizons/wagtail-google-tag/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/Limitless-Horizons/wagtail-google-tag/releases/tag/v0.1.0
