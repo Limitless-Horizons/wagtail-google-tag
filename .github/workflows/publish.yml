@@ -6,42 +6,24 @@ on:
   release:
     # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#release
     types: [published]
+  # Test and build, without publishing, when a pull request changes how the
+  # package is built or released.
+  pull_request:
+    paths:
+      - .github/workflows/publish.yml
+      - .github/workflows/test.yml
+      - .github/scripts/check_package.py
+      - pyproject.toml
 
 permissions: {}
 
 jobs:
   test:
     uses: ./.github/workflows/test.yml
-    permissions: {}
-  compilemessages:
-    runs-on: ubuntu-latest
     permissions:
       contents: read
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: Install gettext to compile translation files
-        run: sudo apt-get install -y gettext
-      - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
-        # Prevent cache poisoning by disabling cache.
-        with:
-          enable-cache: false
-      - run: uv run ../demo/manage.py compilemessages
-        # Need to be in the `src` directory, otherwise compilemessages
-        # will try to compile other apps too
-        working-directory: src
-      - name: Upload compiled message catalogs
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: compiled-message-catalogs
-          if-no-files-found: ignore
-          # Save compiled message catalogs to the same relative path so they can
-          # be easily merged back into the source tree in the next job
-          path: |
-            ./src/wagtail_google_tag/**/*.mo
   build:
-    needs: [test, compilemessages]
+    needs: [test]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -53,20 +35,18 @@ jobs:
         # Prevent cache poisoning by disabling cache.
         with:
           enable-cache: false
-      - name: Download compiled message catalogs
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          # Places catalogs back in the same relative path as when they were uploaded
-          # meaning they will be in the correct location for packaging
-          name: compiled-message-catalogs
       - run: uv build --verbose
-      # Smoke tests with ready-to-publish package.
-      - run: uv run --isolated --no-project --with dist/*.whl pytest
-      - run: uv run --isolated --no-project --with dist/*.tar.gz pytest
+      # Smoke test each ready-to-publish package on its own: it installs,
+      # and carries its templates, static files and migrations.
+      - run: |
+          for dist in dist/*.whl dist/*.tar.gz; do
+            uv run --isolated --no-project --with "$dist" python .github/scripts/check_package.py
+          done
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           path: ./dist
   publish:
+    if: github.event_name == 'release'
     needs: build
     runs-on: ubuntu-latest
     permissions:
