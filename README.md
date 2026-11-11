@@ -1,19 +1,57 @@
 # Wagtail Google tag
 
-Google tag (GA4) for Wagtail. Goal is everything you need to do to set up GA, you do through the Wagtail admin: per-site settings, Consent Mode defaults, page data and click events.
+Google tag configuration UI (GA4) for Wagtail. Our ultimate goal is everything you need to do to set up GA, you do through the Wagtail admin.
 
 Claude Code was used with oversight by the maintainer.
 
-## What it is
+## Summary of Purpose
 
-Wagtail Google tag adds Google's tag for Google Analytics 4 to a Wagtail site. Each site's measurement ID and options are set in the Wagtail admin. The tag loads with Consent Mode defaults that keep visitors in Europe out of analytics cookies until they agree, and it stays out of previews and away from signed-in editors. Pages can add their own data to each page view, and links and buttons can send events with two HTML attributes.
+“Wagtail Google tag” adds Google tags for Google Analytics 4 to a Wagtail site, exposing as much setup and configuration as possible via the admin UI and providing a clear checklist of what has to be done outside that. The focus is on sending data to GA.
 
-It doesn't bring Google Analytics into the Wagtail admin: reports, key events and data retention stay in Google Analytics. It also doesn't load Google Tag Manager containers or send server-side events.
+It doesn't bring Google Analytics into the Wagtail admin: reports stay in Google Analytics, and so do its own settings, such as data retention and key events. It also doesn't load a Tag Manager container of your own.
+
+## Progress so far
+* A `page_view` for every page, sent by Google's tag
+* Google Analytics' enhanced measurement (scrolls, outbound clicks and site search), per your setup in Google Analytics
+* Tag is kept out of preview views automatically (non-configurable)
+* Settings available under Settings → Google tag, per the table below
+* In your templates, add an HTML attribute to a link or button to enable [click events](#click-events).
+
+## Settings reference
+
+Each site has its own settings, under **Settings → Google tag**.
+
+| Setting | Default | What it does |
+|---|---|---|
+| Measurement ID | Blank | The site's GA4 measurement ID (`G-…`). Blank means no tag. |
+| Deny analytics by default in Europe | On | When on, visitors in Europe start with analytics and advertising signals denied, as in [Consent](#consent). When off, they start like everyone else. |
+| Site uses Google Ads | Off | When on, advertising signals are granted by default outside Europe, and a banner's `marketing` choice sets them. When off, they're denied for every visitor. |
+| Leave out of tracking | Nothing checked | Roles that will _not_ get a tag, as a list of checkboxes. See [Who is tracked](#who-is-tracked). |
+| Track email and phone links | On | When on, a click on an email or phone link sends `contact_link_click` with `link_type` set to `email` or `phone`. |
+
+### Who is tracked
+
+Two settings decide this, and they do different jobs:
+
+- **Leave out of tracking** decides whether a visitor gets Google's tag at all. A visitor with a checked role gets no tag, and nothing about their visit is sent. Use this to leave logged-in Editors untracked, for example.
+- **Consent** decides what the tag may do for everyone else. A visitor who hasn't agreed to analytics, or has withdrawn, still gets the tag, but it sets no analytics cookies and sends Google only cookieless pings. See [Consent](#consent).
+
+Neither overrides the other. Everyone gets the tag unless you check a role under **Leave out of tracking**:
+
+| Checkbox | Who it leaves out |
+|---|---|
+| Anyone signed in | Every signed-in user. It overrides the rest of the list. |
+| Administrators | Users with Wagtail's Administrator status |
+| Signed in, with no group | Signed-in users who belong to no group |
+| Each group, by name | Members of that group, such as Editors or Moderators |
+
+A user with several roles is left out if any one of them is checked. Visitors who aren't signed in are always tracked. Groups are the ones under **Settings → Groups**, and a group you add there appears in the list.
 
 ## Requirements
 
 - Wagtail 7.4, 8.0 or 8.1, with the [Python and Django versions](https://docs.wagtail.org/en/stable/releases/upgrading.html#compatible-django-python-versions) each of them supports
 - `wagtail.contrib.settings`, which comes with Wagtail
+- `django.template.context_processors.request` in your template settings. Wagtail's project template has it. Without it, the tag loads nothing.
 
 ## Installation
 
@@ -34,7 +72,7 @@ It doesn't bring Google Analytics into the Wagtail admin: reports, key events an
    ]
    ```
 
-3. Create its table:
+3. Create its tables:
 
    ```sh
    python manage.py migrate
@@ -52,15 +90,9 @@ It doesn't bring Google Analytics into the Wagtail admin: reports, key events an
        ...
    ```
 
-5. In the Wagtail admin, go to **Settings → Google tag** and enter your GA4 measurement ID. In Google Analytics, it's under **Admin → Data streams**.
+5. In the Wagtail admin, go to **Settings → Google tag** and enter your GA4 measurement ID. In Google Analytics, it's under **Admin → Data streams**, in your web stream.
 
-## What you get out of the box
-
-- A `page_view` for every page, with GA's built-in `content_group` set to the page type, such as "Blog page".
-- Google Analytics' own automatic tracking (enhanced measurement), such as scrolls, outbound clicks and site search, as you set it up in Google Analytics.
-- [Consent Mode](#consent) defaults: analytics denied in Europe until a visitor agrees, and Google's advertising signals denied everywhere unless your site uses Google Ads.
-- A `contact_link_click` event when a visitor clicks an email or phone link. Google Analytics' automatic tracking doesn't cover these.
-- Nothing sent from Wagtail previews, or for signed-in users such as editors.
+The tag's script is one of the package's static files. On a deployed site, run `collectstatic` after you install or upgrade the package, as for any app's static files.
 
 ## Usage
 
@@ -78,26 +110,6 @@ Add `data-google-tag-event` to any link or button to send that event when it's c
 
 A click sends one event. An email or phone link with its own `data-google-tag-event` sends only that event, not `contact_link_click` as well.
 
-### Page data
-
-A page model can supply the parameters for its page view with `get_google_tag_params()`. Start from the defaults to keep the content group:
-
-```python
-from wagtail.models import Page
-from wagtail_google_tag.tag import default_page_params
-
-
-class BlogPage(Page):
-    ...
-
-    def get_google_tag_params(self):
-        params = default_page_params(self)  # {"content_group": "Blog page"}
-        params["blog_category"] = self.category.name
-        return params
-```
-
-To see a parameter like `blog_category` in Google Analytics' reports, register it there as a custom dimension.
-
 ### From scripts
 
 The tag defines `window.wagtailGoogleTag`. It's there on every page, and sends nothing when the tag isn't loaded, so scripts never need to check:
@@ -106,15 +118,29 @@ The tag defines `window.wagtailGoogleTag`. It's there on every page, and sends n
 window.wagtailGoogleTag.track("generate_lead", { method: "newsletter" });
 ```
 
-### Templates without a Wagtail page
+### Templates outside your base template
 
-Pages that aren't Wagtail pages, such as a 404 page, can pass their own parameters:
+A template that doesn't extend your base template, such as a 404 page, needs the tag too:
 
 ```django
-{% google_tag content_group="Not found" %}
+{% load wagtail_google_tag %}
+...
+{% google_tag %}
 ```
 
-These are added to the page's own parameters, and win if both set the same one.
+### Page views
+
+Google's tag sends the page view itself, with the page's address and title.
+
+Google has deprecated the `config` command, and the tags of newer Google Analytics properties ignore it. So the package sends data only on events.
+
+### Testing your setup
+
+Visit your site, click around, and watch Google Analytics' **Realtime** report (**Reports → Realtime**). Google gives Realtime's delay as typically a few minutes, with no guarantee. Select an event there to see the parameters sent with it. If your own role is checked under **Leave out of tracking**, visit while signed out of Wagtail.
+
+### Content Security Policy
+
+If your site has a Content Security Policy, allow Google's tag in it. Google lists the sources Google Analytics needs in its [Content Security Policy guide](https://developers.google.com/tag-platform/security/guides/csp#google_analytics): `https://www.googletagmanager.com` for scripts, and more for images and connections. The package itself uses no inline scripts.
 
 ## Consent
 
@@ -125,7 +151,9 @@ Before a visitor has made a choice, Google's tag starts with these Consent Mode 
 | In the European Economic Area, the UK and Switzerland | Denied | Denied |
 | Everywhere else | Granted | Denied, unless "Site uses Google Ads" is on |
 
-Google works out where a visitor is. Denied analytics means no analytics cookies: Google Analytics receives only cookieless pings. To start with analytics granted everywhere, turn off **Deny analytics by default in Europe**.
+Google works out where a visitor is. Denied analytics means no analytics cookies: Google Analytics receives only cookieless pings, which Google says can't directly identify an individual, and uses them to model the data that's missing. To start with analytics granted everywhere, turn off **Deny analytics by default in Europe**.
+
+This is what Google calls advanced consent mode: the tag loads for every visitor and adjusts to their consent, rather than staying off until they agree. It keeps the most measurement Consent Mode allows. A cookieless ping still reaches Google, so check that this fits the rules that apply to your site.
 
 A consent banner updates these defaults with the visitor's choice, in either of two ways:
 
@@ -143,41 +171,30 @@ document.dispatchEvent(
 
 `analytics` sets analytics storage. `marketing` sets the advertising signals, and only when **Site uses Google Ads** is on. A banner that runs on each page load once a visitor has chosen should send the choice each time. In Europe, Google's tag waits half a second for that update before it sends anything.
 
+Google Analytics has two settings of its own that touch these defaults. They're in the property's Google tag settings, under **Admin → Data streams →** your stream **→ Configure tag settings**:
+
+- **Override consent mode defaults:** leave it unset. If it's set, it replaces the defaults above.
+- **Manage default consent settings:** choose "No. Do not automatically mark this data as consented."
+
 The event comes from [wagtail-cookie-consent](https://github.com/Limitless-Horizons/wagtail-cookie-consent), a companion package in development, but any banner can send it or call the function.
 
-## Settings reference
+## Google Analytics setup checklist
 
-Each site has its own settings, under **Settings → Google tag**.
+These are set in Google Analytics, not in Wagtail. All of them are under **Admin** in your property.
 
-| Setting | Default | What it does |
-|---|---|---|
-| Measurement ID | Blank | The site's GA4 measurement ID (`G-…`). Blank means no tag, unless the Django setting below supplies one. |
-| Deny analytics by default in Europe | On | The Europe defaults in [Consent](#consent). |
-| Site uses Google Ads | Off | When off, advertising signals are denied for every visitor. |
-| Track signed-in users | Off | When off, visits by signed-in users aren't tracked. |
-| Track email and phone links | On | Sends `contact_link_click` with `link_type` set to `email` or `phone`. |
-| Debug mode | Off | Sends events to Google Analytics' DebugView, for testing. |
-
-`WAGTAIL_GOOGLE_TAG_MEASUREMENT_ID` in your Django settings is a fallback, used by any site whose measurement ID is blank. It's useful for moving an existing tag over, or for setting the ID from an environment variable.
-
-### Testing your setup
-
-Turn on **Debug mode**, then visit your site in a private window, since your own signed-in visits aren't tracked. Your page views and events show up in Google Analytics under **Admin → DebugView**. Turn debug mode off when you're done.
-
-### Content Security Policy
-
-If your site has a Content Security Policy, allow Google's tag: `https://www.googletagmanager.com` in `script-src`, and Google Analytics' collection domains, such as `https://*.google-analytics.com`, in `connect-src`. The package itself uses no inline scripts.
+1. **Data retention.** Choose how long Google Analytics keeps event data: 2 months, which is the default, or 14 months. Match what your privacy notice says.
+2. **Enhanced measurement.** Under **Data collection and modification → Data streams →** your stream, check that **Enhanced measurement** is on. It's what sends scrolls, outbound clicks and site search. The search page in Wagtail's project template works as it is: its `?query=` is one of the parameters Google looks for.
+3. **Key events.** Under **Data display → Events**, mark the events that count as results for you, such as `generate_lead`. An event appears there once Google Analytics has received it.
+4. **Custom dimensions.** A parameter on one of your events shows in reports only after you create a custom dimension for it. Under **Data display → Custom definitions**, create one with the scope **Event** for each parameter you want to report on. For the package's own event, that's `link_type` on `contact_link_click`.
+5. **Google tag settings.** Under **Data collection and modification → Data streams →** your stream **→ Configure tag settings**:
+   - **Allow user-provided data capabilities:** when it's on, Google's tag may look for email addresses on your pages. Turn it off if no email address should reach Google Analytics.
+   - **Override consent mode defaults:** leave it unset, as in [Consent](#consent).
+   - **Manage default consent settings:** choose "No. Do not automatically mark this data as consented."
+6. **Check that it works,** as in [Testing your setup](#testing-your-setup).
 
 ## Privacy notes
 
 The package sends no personal data. Email and phone link events carry only `link_type`, never the address or number. Google's own rules forbid personal data in Google Analytics, so keep it out of your own event parameters too.
-
-Some things are set in Google Analytics, not here:
-
-- How long data is kept (Google's default is two months)
-- Which events count as key events, such as `generate_lead`
-- Custom dimensions for your own parameters
-- Enhanced measurement: scrolls, outbound clicks, site search and the rest
 
 ## Links
 

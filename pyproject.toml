@@ -1,7 +1,7 @@
 [project]
 name = "wagtail-google-tag"
-version = "0.1.0"
-description = "Google tag (GA4) for Wagtail, set up in the Wagtail admin: per-site settings, Consent Mode defaults, page data and click events."
+version = "0.2.0"
+description = "Google tag configuration UI (GA4) for Wagtail: per-site settings, Consent Mode defaults and click events, set up in the Wagtail admin."
 readme = "README.md"
 license = "BSD-3-Clause"
 classifiers = [

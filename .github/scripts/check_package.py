@@ -17,6 +17,7 @@ missing = [
         "templatetags/wagtail_google_tag.py",
         "static/wagtail_google_tag/js/google-tag.js",
         "migrations/0001_initial.py",
+        "migrations/0002_leave_out_of_tracking.py",
     )
     if not package.joinpath(path).is_file()
 ]

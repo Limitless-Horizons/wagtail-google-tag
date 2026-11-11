@@ -17,7 +17,6 @@ const ENABLED = {
     { analytics_storage: 'granted', ad_storage: 'denied' },
     { analytics_storage: 'denied', region: ['DE'], wait_for_update: 500 },
   ],
-  params: { content_group: 'Article page' },
   ads: false,
   contactLinks: true,
 };
@@ -50,28 +49,19 @@ const click = (window, selector) =>
       new window.MouseEvent('click', { bubbles: true, cancelable: true }),
     );
 
-test("consent defaults come before config, and Google's tag loads", () => {
+test("consent defaults come first, and Google's tag loads without config", () => {
   const window = page(ENABLED);
   const commands = calls(window).map(([command, kind]) =>
     command === 'consent' ? `consent ${kind}` : command,
   );
-  assert.deepEqual(commands, [
-    'consent default',
-    'consent default',
-    'js',
-    'config',
-  ]);
-  assert.deepEqual(calls(window)[3], [
-    'config',
-    'G-TEST123',
-    { content_group: 'Article page' },
-  ]);
+  // No "config" command: Google has deprecated it.
+  assert.deepEqual(commands, ['consent default', 'consent default', 'js']);
   const script = window.document.querySelector(
-    'script[src^="https://www.googletagmanager.com/gtag/js"]',
+    'script[src^="https://www.googletagmanager.com/"]',
   );
   assert.equal(
     script.src,
-    'https://www.googletagmanager.com/gtag/js?id=G-TEST123',
+    'https://www.googletagmanager.com/gtm.js?id=G-TEST123',
   );
   assert.equal(script.async, true);
 });
@@ -109,6 +99,12 @@ test('track() sends an event', () => {
   assert.deepEqual(events(window), [
     ['generate_lead', { method: 'contact_form' }],
   ]);
+});
+
+test('track() without params sends an empty object', () => {
+  const window = page(ENABLED);
+  window.wagtailGoogleTag.track('sign_up');
+  assert.deepEqual(events(window), [['sign_up', {}]]);
 });
 
 test('data-google-tag-event sends its event with its params', () => {

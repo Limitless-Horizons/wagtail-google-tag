@@ -8,11 +8,15 @@
  *   object as its detail, does the same.
  *
  * Both do nothing when the tag isn't loaded (no measurement ID, a preview, or
- * a signed-in user who isn't tracked), so pages never need to check.
+ * a visitor the site leaves out of tracking), so pages never need to check.
  *
  * Clicks on elements with data-google-tag-event send that event, with
  * parameters from data-google-tag-params (JSON). Clicks on email and phone
  * links send contact_link_click, unless the link has its own event.
+ *
+ * Google's tag is installed the way Google documents it now: its script from
+ * gtm.js and no "config" command, which is deprecated. Google's tag sends the
+ * page view itself, and parameters go on events only.
  */
 (() => {
   if (window.wagtailGoogleTag) return;
@@ -31,11 +35,10 @@
     window.gtag = gtag;
     config.consent.forEach((defaults) => gtag('consent', 'default', defaults));
     gtag('js', new Date());
-    gtag('config', config.id, config.params);
 
     const script = document.createElement('script');
     script.async = true;
-    script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(config.id)}`;
+    script.src = `https://www.googletagmanager.com/gtm.js?id=${encodeURIComponent(config.id)}`;
     document.head.appendChild(script);
   }
 
