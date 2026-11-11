@@ -3,10 +3,6 @@ What the {% google_tag %} template tag renders: whether Google's tag loads for
 this request, and the configuration the browser script gets.
 """
 
-from django.conf import settings
-from django.utils.text import capfirst
-from wagtail.models import Page
-
 from .models import GoogleTagSettings
 
 
@@ -37,28 +33,6 @@ def get_settings(request):
         return GoogleTagSettings()
 
 
-def get_measurement_id(site_settings):
-    """The site's measurement ID, or the WAGTAIL_GOOGLE_TAG_MEASUREMENT_ID
-    setting when the site has none."""
-    return site_settings.measurement_id or getattr(
-        settings, "WAGTAIL_GOOGLE_TAG_MEASUREMENT_ID", ""
-    )
-
-
-def default_page_params(page):
-    """The page_view parameters for a page without get_google_tag_params():
-    its page type as GA's content group."""
-    model = page.specific_class or type(page)
-    return {"content_group": str(capfirst(model._meta.verbose_name))}
-
-
-def page_params(page):
-    get_params = getattr(page, "get_google_tag_params", None)
-    if get_params is None:
-        return default_page_params(page)
-    return dict(get_params())
-
-
 def consent_defaults(site_settings):
     """Consent Mode defaults: analytics granted, ad signals denied unless the
     site uses Google Ads, and everything denied in Europe if the site says so.
@@ -77,37 +51,25 @@ def consent_defaults(site_settings):
     return defaults
 
 
-def is_signed_in(request):
-    user = getattr(request, "user", None)
-    return bool(user and user.is_authenticated)
-
-
-def tag_config(context, overrides):
+def tag_config(context):
     """The browser script's configuration. "id" is None when the tag doesn't
-    load: no measurement ID, a preview, or a signed-in user who isn't tracked."""
+    load: no measurement ID, a preview, or a visitor with a role the site
+    leaves out of tracking."""
     request = context.get("request")
     if request is None:
         return {"id": None}
 
     site_settings = get_settings(request)
-    measurement_id = get_measurement_id(site_settings)
     if (
-        not measurement_id
+        not site_settings.measurement_id
         or getattr(request, "is_preview", False)
-        or (is_signed_in(request) and not site_settings.track_signed_in_users)
+        or site_settings.leaves_out(getattr(request, "user", None))
     ):
         return {"id": None}
 
-    page = context.get("page")
-    params = page_params(page) if isinstance(page, Page) else {}
-    params.update(overrides)
-    if site_settings.debug_mode:
-        params["debug_mode"] = True
-
     return {
-        "id": measurement_id,
+        "id": site_settings.measurement_id,
         "consent": consent_defaults(site_settings),
-        "params": params,
         "ads": site_settings.uses_google_ads,
         "contactLinks": site_settings.track_contact_links,
     }
