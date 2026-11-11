@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-11-11
+
+### Changed
+
+- The help text at the top of **Leave out of tracking** changed.
+- README: a Troubleshooting section, and more detail in the Google Analytics setup checklist.
+
 ## [0.2.0] - 2026-11-11
 
 ### Added
@@ -38,6 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Click events from `data-google-tag-event` and `data-google-tag-params`, and `contact_link_click` for email and phone links.
 - Support for Wagtail 7.4, 8.0 and 8.1.
 
-[Unreleased]: https://github.com/Limitless-Horizons/wagtail-google-tag/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/Limitless-Horizons/wagtail-google-tag/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/Limitless-Horizons/wagtail-google-tag/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/Limitless-Horizons/wagtail-google-tag/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/Limitless-Horizons/wagtail-google-tag/releases/tag/v0.1.0

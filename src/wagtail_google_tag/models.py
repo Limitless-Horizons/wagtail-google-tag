@@ -99,11 +99,7 @@ class GoogleTagSettings(BaseSiteSetting):
                 FieldPanel("exclude_groups", widget=forms.CheckboxSelectMultiple),
             ],
             heading=_("Leave out of tracking"),
-            help_text=_(
-                "Visitors with a checked role get no tag. With nothing checked, "
-                "everyone is tracked. Visitors who aren't signed in are always "
-                "tracked."
-            ),
+            help_text=_("Visitors who aren't signed in are always tracked."),
         ),
         FieldPanel("track_contact_links"),
     ]
