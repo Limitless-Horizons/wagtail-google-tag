@@ -21,6 +21,8 @@ It doesn't bring Google Analytics into the Wagtail admin: reports stay in Google
 
 Each site has its own settings, under **Settings → Google tag**.
 
+![The Google tag settings in the Wagtail admin: the measurement ID, the consent settings and the start of Leave out of tracking](https://raw.githubusercontent.com/Limitless-Horizons/wagtail-google-tag/main/docs/images/admin-settings.jpg)
+
 | Setting | Default | What it does |
 |---|---|---|
 | Measurement ID | Blank | The site's GA4 measurement ID (`G-…`). Blank means no tag. |
