@@ -35,6 +35,7 @@
 !/SECURITY.md
 !/LICENSE
 !/AGENTS.md
+!/docs/
 
 # Still ignored inside the allowed folders
 __pycache__/
