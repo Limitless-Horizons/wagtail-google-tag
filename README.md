@@ -169,14 +169,16 @@ document.dispatchEvent(
 );
 ```
 
-`analytics` sets analytics storage. `marketing` sets the advertising signals, and only when **Site uses Google Ads** is on. A banner that runs on each page load once a visitor has chosen should send the choice each time. In Europe, Google's tag waits half a second for that update before it sends anything.
+`analytics` sets analytics storage. `marketing` sets the advertising signals, and only when **Site uses Google Ads** is on. A banner that runs on each page load once a visitor has chosen should send the choice each time, as early as it can: Google's tag waits half a second for that update before it sends anything, and a choice that arrives later misses the page view.
+
+When a visitor refuses or withdraws analytics, the package also deletes Google Analytics' cookies (`_ga` and those starting with `_ga_`), which Google's tag would otherwise leave in place.
 
 Google Analytics has two settings of its own that touch these defaults. They're in the property's Google tag settings, under **Admin → Data streams →** your stream **→ Configure tag settings**:
 
 - **Override consent mode defaults:** leave it unset. If it's set, it replaces the defaults above.
 - **Manage default consent settings:** choose "No. Do not automatically mark this data as consented."
 
-The event comes from [wagtail-cookie-consent](https://github.com/Limitless-Horizons/wagtail-cookie-consent), a companion package in development, but any banner can send it or call the function.
+The event comes from [wagtail-cookie-consent](https://github.com/Limitless-Horizons/wagtail-cookie-consent), a companion package, but any banner can send it or call the function. With that package, put `{% google_tag %}` before `{% cookie_consent %}`.
 
 ## Google Analytics setup checklist
 
@@ -196,7 +198,7 @@ These are set in Google Analytics, not in Wagtail. All of them are under **Admin
 
 ## Troubleshooting
 
-- **No tag on the page:** the measurement ID is blank, your role is left out, the page is a preview, or `collectstatic` hasn't run.
+- **No tag on the page:** the measurement ID is blank, your role is left out, the page is a preview, or `collectstatic` hasn't run. Run `python manage.py check` too: it warns when the request isn't in the template context.
 - **Nothing in Realtime:** wait a few minutes, and turn off any ad blocker or tracking protection in your browser.
 - **A parameter isn't in reports:** create a custom dimension for it (checklist item 4).
 - **A Google tag setting has no effect:** publish the new version (checklist item 5).
@@ -211,6 +213,7 @@ The package sends no personal data. Email and phone link events carry only `link
 - [Changelog](https://github.com/Limitless-Horizons/wagtail-google-tag/blob/main/CHANGELOG.md)
 - [Contributing](https://github.com/Limitless-Horizons/wagtail-google-tag/blob/main/CONTRIBUTING.md)
 - [Security policy](https://github.com/Limitless-Horizons/wagtail-google-tag/blob/main/SECURITY.md)
+- [Agents](https://github.com/Limitless-Horizons/wagtail-google-tag/blob/main/AGENTS.md)
 
 ## License
 

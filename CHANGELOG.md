@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-11-11
+
+### Fixed
+
+- A visitor's stored consent choice now applies to the page view of each later page. Google's tag sends the page view as soon as it starts, so outside Europe a stored refusal used to reach it too late. Google's tag now waits half a second for the choice everywhere, as it already did in Europe.
+
+### Added
+
+- When a visitor refuses or withdraws analytics, Google Analytics' cookies (`_ga` and those starting with `_ga_`) are deleted.
+- A system check that warns when the request isn't in the template context.
+
+### Changed
+
+- `LICENSE` names the copyright holder, and the package metadata names the author.
+- README: a link to `AGENTS.md`, and `wagtail-cookie-consent` is no longer "in development".
+
 ## [0.2.1] - 2026-11-11
 
 ### Changed
@@ -45,7 +61,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Click events from `data-google-tag-event` and `data-google-tag-params`, and `contact_link_click` for email and phone links.
 - Support for Wagtail 7.4, 8.0 and 8.1.
 
-[Unreleased]: https://github.com/Limitless-Horizons/wagtail-google-tag/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/Limitless-Horizons/wagtail-google-tag/compare/v0.2.2...HEAD
+[0.2.2]: https://github.com/Limitless-Horizons/wagtail-google-tag/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/Limitless-Horizons/wagtail-google-tag/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/Limitless-Horizons/wagtail-google-tag/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/Limitless-Horizons/wagtail-google-tag/releases/tag/v0.1.0

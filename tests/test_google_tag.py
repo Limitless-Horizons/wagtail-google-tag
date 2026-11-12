@@ -265,6 +265,7 @@ def test_consent_defaults(client, tag_settings, plain_page):
         "ad_storage": "denied",
         "ad_user_data": "denied",
         "ad_personalization": "denied",
+        "wait_for_update": 500,
     }
     assert europe["analytics_storage"] == "denied"
     assert europe["ad_storage"] == "denied"
@@ -382,6 +383,17 @@ def test_settings_app_check():
         assert [e.id for e in settings_app_installed(None)] == [
             "wagtail_google_tag.E001"
         ]
+
+
+def test_request_context_processor_check(settings):
+    templates = [dict(engine) for engine in settings.TEMPLATES]
+    templates[0]["OPTIONS"] = {
+        "context_processors": ["django.contrib.auth.context_processors.auth"]
+    }
+    settings.TEMPLATES = templates
+    assert [e.id for e in run_checks() if e.id.startswith("wagtail_google_tag")] == [
+        "wagtail_google_tag.W001"
+    ]
 
 
 # Moving over from 0.1
