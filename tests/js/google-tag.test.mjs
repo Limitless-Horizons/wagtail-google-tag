@@ -14,7 +14,11 @@ const SCRIPT = readFileSync(
 const ENABLED = {
   id: 'G-TEST123',
   consent: [
-    { analytics_storage: 'granted', ad_storage: 'denied' },
+    {
+      analytics_storage: 'granted',
+      ad_storage: 'denied',
+      wait_for_update: 500,
+    },
     { analytics_storage: 'denied', region: ['DE'], wait_for_update: 500 },
   ],
   ads: false,
@@ -186,6 +190,44 @@ test('consent() updates ad signals when the site uses ads', () => {
       ad_personalization: 'granted',
     },
   ]);
+});
+
+const cookieNames = (window) =>
+  window.document.cookie
+    .split(';')
+    .map((cookie) => cookie.split('=')[0].trim())
+    .filter(Boolean)
+    .sort();
+
+test("refusing analytics deletes Google Analytics' cookies, and only those", () => {
+  const window = page(ENABLED);
+  window.document.cookie = '_ga=GA1.1.1.1; path=/; domain=example.com';
+  window.document.cookie = '_ga_TEST123=GS1.1.1; path=/; domain=example.com';
+  window.document.cookie = '_gallery=1; path=/';
+  window.document.cookie = 'csrftoken=abc; path=/';
+  window.wagtailGoogleTag.consent({ analytics: true });
+  assert.deepEqual(cookieNames(window), [
+    '_ga',
+    '_ga_TEST123',
+    '_gallery',
+    'csrftoken',
+  ]);
+  window.wagtailGoogleTag.consent({ analytics: false });
+  assert.deepEqual(cookieNames(window), ['_gallery', 'csrftoken']);
+});
+
+test("cookies set on the page's own host are deleted too", () => {
+  const window = page(ENABLED);
+  window.document.cookie = '_ga=GA1.1.1.1; path=/';
+  window.wagtailGoogleTag.consent({ analytics: false });
+  assert.deepEqual(cookieNames(window), []);
+});
+
+test('without the tag, no cookie is touched', () => {
+  const window = page({ id: null });
+  window.document.cookie = '_ga=GA1.1.1.1; path=/';
+  window.wagtailGoogleTag.consent({ analytics: false });
+  assert.deepEqual(cookieNames(window), ['_ga']);
 });
 
 test('the wagtail-cookie-consent:change event updates consent', () => {

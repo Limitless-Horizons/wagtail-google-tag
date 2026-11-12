@@ -1,9 +1,10 @@
 [project]
 name = "wagtail-google-tag"
-version = "0.2.1"
+version = "0.2.2"
 description = "Google tag configuration UI (GA4) for Wagtail: per-site settings, Consent Mode defaults and click events, set up in the Wagtail admin."
 readme = "README.md"
 license = "BSD-3-Clause"
+authors = [{ name = "Limitless Horizons Development, LLC" }]
 classifiers = [
     # Update this based on your project's status.
     # See: https://pypi.org/classifiers/

@@ -19,7 +19,9 @@ EUROPE = (
     "GB", "CH",
 )  # fmt: skip
 
-# How long Google's tag waits for a consent banner's update in Europe, in ms.
+# How long Google's tag waits for a consent banner's update, in ms. Google's tag
+# sends its page view as soon as it starts; without the wait, a visitor's stored
+# choice would reach it too late for that first hit.
 WAIT_FOR_UPDATE = 500
 
 AD_SIGNALS = ("ad_storage", "ad_user_data", "ad_personalization")
@@ -38,7 +40,13 @@ def consent_defaults(site_settings):
     site uses Google Ads, and everything denied in Europe if the site says so.
     Google applies the most specific region that matches the visitor."""
     ads = "granted" if site_settings.uses_google_ads else "denied"
-    defaults = [{"analytics_storage": "granted", **dict.fromkeys(AD_SIGNALS, ads)}]
+    defaults = [
+        {
+            "analytics_storage": "granted",
+            **dict.fromkeys(AD_SIGNALS, ads),
+            "wait_for_update": WAIT_FOR_UPDATE,
+        }
+    ]
     if site_settings.deny_analytics_in_europe:
         defaults.append(
             {
