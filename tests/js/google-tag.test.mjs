@@ -247,3 +247,33 @@ test('a change event without a choice is ignored', () => {
   );
   assert.deepEqual(updates(window), []);
 });
+
+const userIds = (window) =>
+  calls(window)
+    .filter(([command]) => command === 'set')
+    .map(([, values]) => values.user_id);
+
+test('user() sets the User-ID, and user(null) clears it', () => {
+  const window = page(ENABLED);
+  window.wagtailGoogleTag.user('lead-123');
+  window.wagtailGoogleTag.user(42);
+  window.wagtailGoogleTag.user(null);
+  window.wagtailGoogleTag.user('');
+  // Google's rule for "no user" is null, never an empty string.
+  assert.deepEqual(userIds(window), ['lead-123', '42', null, null]);
+});
+
+test('refusing analytics clears the User-ID, and allowing it leaves it alone', () => {
+  const window = page(ENABLED);
+  window.wagtailGoogleTag.user('lead-123');
+  window.wagtailGoogleTag.consent({ analytics: true });
+  assert.deepEqual(userIds(window), ['lead-123']);
+  window.wagtailGoogleTag.consent({ analytics: false });
+  assert.deepEqual(userIds(window), ['lead-123', null]);
+});
+
+test('without the tag, user() sends nothing', () => {
+  const window = page({ id: null });
+  window.wagtailGoogleTag.user('lead-123');
+  assert.deepEqual(calls(window), []);
+});
