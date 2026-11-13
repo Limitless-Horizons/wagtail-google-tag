@@ -6,9 +6,11 @@
  * - consent({ analytics, marketing }) updates Consent Mode with a visitor's
  *   choice. A "wagtail-cookie-consent:change" event on document, with the same
  *   object as its detail, does the same. When analytics is refused, Google
- *   Analytics' cookies are deleted too.
+ *   Analytics' cookies are deleted too, and the User-ID is cleared.
+ * - user(id) sets Google Analytics' User-ID for the events that follow, and
+ *   user(null) clears it.
  *
- * Both do nothing when the tag isn't loaded (no measurement ID, a preview, or
+ * All three do nothing when the tag isn't loaded (no measurement ID, a preview, or
  * a visitor the site leaves out of tracking), so pages never need to check.
  *
  * Clicks on elements with data-google-tag-event send that event, with
@@ -71,12 +73,23 @@
     });
   };
 
+  /**
+   * Sets Google Analytics' User-ID, or clears it with null. Google's rule for
+   * signing out is null, never an empty string.
+   */
+  const user = (id) => {
+    if (enabled) gtag('set', { user_id: id ? String(id) : null });
+  };
+
   const consent = (choice) => {
     if (!enabled || !choice) return;
     const update = {};
     if ('analytics' in choice) {
       update.analytics_storage = choice.analytics ? 'granted' : 'denied';
-      if (!choice.analytics) deleteAnalyticsCookies();
+      if (!choice.analytics) {
+        deleteAnalyticsCookies();
+        user(null);
+      }
     }
     // Ad signals stay denied unless the site uses Google Ads.
     if (config.ads && 'marketing' in choice) {
@@ -88,7 +101,7 @@
     if (Object.keys(update).length) gtag('consent', 'update', update);
   };
 
-  window.wagtailGoogleTag = { track, consent };
+  window.wagtailGoogleTag = { track, consent, user };
 
   document.addEventListener('wagtail-cookie-consent:change', (event) => {
     consent(event.detail);

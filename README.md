@@ -16,6 +16,7 @@ It doesn't bring Google Analytics into the Wagtail admin: reports stay in Google
 * Tag is kept out of preview views automatically (non-configurable)
 * Settings available under Settings → Google tag, per the table below
 * In your templates, add an HTML attribute to a link or button to enable [click events](#click-events).
+* For visitors your site knows, a [User-ID](#user-id) of your own on their events
 
 ## Settings reference
 
@@ -120,6 +121,27 @@ The tag defines `window.wagtailGoogleTag`. It's there on every page, and sends n
 window.wagtailGoogleTag.track("generate_lead", { method: "newsletter" });
 ```
 
+### User-ID
+
+If your site knows who a visitor is, it can give Google Analytics its own ID for them, so that their visits are counted as one person's across sessions and devices. This is Google Analytics' [User-ID](https://support.google.com/analytics/answer/9213390) feature:
+
+```js
+window.wagtailGoogleTag.user("3f6c1a52-9d0e-4c7b-8a41-5e2b7d90c1aa");
+
+// When the visitor is no longer known, or has asked you to stop
+window.wagtailGoogleTag.user(null);
+```
+
+Call it on each page where you know the visitor, as early as you can. The ID goes on the events that follow, not on the page view Google's tag has already queued; Google Analytics connects a session's earlier events to the ID once it arrives.
+
+The package doesn't decide who a visitor is or whether they've agreed: that's your site's job. Google's rules for the feature are yours to meet:
+
+- **No personal information in the ID.** Use a random ID of your own, never an email address or a name, hashed or not. It can be 256 characters at most.
+- **The visitor's consent to connecting their activity.** Google requires it before you join what a visitor did before and after you knew who they were. Agreeing to analytics cookies in a banner isn't that consent. Ask for it separately, in plain words.
+- **Notice.** Say in your privacy notice that you use an identifier this way.
+
+When a visitor refuses or withdraws analytics, the package clears the User-ID along with [Google Analytics' cookies](#consent). If they allow analytics again, call `user()` again.
+
 ### Templates outside your base template
 
 A template that doesn't extend your base template, such as a 404 page, needs the tag too:
@@ -173,7 +195,7 @@ document.dispatchEvent(
 
 `analytics` sets analytics storage. `marketing` sets the advertising signals, and only when **Site uses Google Ads** is on. A banner that runs on each page load once a visitor has chosen should send the choice each time, as early as it can: Google's tag waits half a second for that update before it sends anything, and a choice that arrives later misses the page view.
 
-When a visitor refuses or withdraws analytics, the package also deletes Google Analytics' cookies (`_ga` and those starting with `_ga_`), which Google's tag would otherwise leave in place.
+When a visitor refuses or withdraws analytics, the package also deletes Google Analytics' cookies (`_ga` and those starting with `_ga_`), which Google's tag would otherwise leave in place, and clears the [User-ID](#user-id) if your site set one.
 
 Google Analytics has two settings of its own that touch these defaults. They're in the property's Google tag settings, under **Admin → Data streams →** your stream **→ Configure tag settings**:
 
@@ -196,7 +218,8 @@ These are set in Google Analytics, not in Wagtail. All of them are under **Admin
    - **Manage default consent settings:** choose "No. Do not automatically mark this data as consented."
 
    Some of these are behind **Show more**. If Google asks you to publish a new version, do: the settings don't apply until then.
-6. **Check that it works,** as in [Testing your setup](#testing-your-setup).
+6. **Reporting identity,** if your site sets a [User-ID](#user-id). Under **Data display → Reporting identity**, choose **Blended** or **Observed**: both use the User-ID. To follow one person, use the **User explorer** technique under **Explore**; it's also where you delete one person's data if they ask.
+7. **Check that it works,** as in [Testing your setup](#testing-your-setup).
 
 ## Troubleshooting
 

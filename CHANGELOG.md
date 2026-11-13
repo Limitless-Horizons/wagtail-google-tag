@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-13
+
+### Added
+
+- `window.wagtailGoogleTag.user(id)` sets Google Analytics' User-ID for the events that follow, and `user(null)` clears it. The User-ID is also cleared when a visitor refuses or withdraws analytics.
+- README: a User-ID section with Google's rules for the feature, and a Reporting identity item in the Google Analytics setup checklist.
+
 ## [0.2.3] - 2026-11-12
 
 ### Changed
@@ -67,7 +74,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Click events from `data-google-tag-event` and `data-google-tag-params`, and `contact_link_click` for email and phone links.
 - Support for Wagtail 7.4, 8.0 and 8.1.
 
-[Unreleased]: https://github.com/Limitless-Horizons/wagtail-google-tag/compare/v0.2.3...HEAD
+[Unreleased]: https://github.com/Limitless-Horizons/wagtail-google-tag/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/Limitless-Horizons/wagtail-google-tag/compare/v0.2.3...v0.3.0
 [0.2.3]: https://github.com/Limitless-Horizons/wagtail-google-tag/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/Limitless-Horizons/wagtail-google-tag/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/Limitless-Horizons/wagtail-google-tag/compare/v0.2.0...v0.2.1
