@@ -49,6 +49,10 @@ just test              # Run tests with pytest.
 
 The `.gitignore` is an allowlist: it ignores everything at the top level of the repository except the files and folders it names. A new top-level file or folder needs its own `!` line in `.gitignore`, or Git won't see it.
 
+## Writing documentation
+
+The README has the basics only. Everything else is in `docs/`, as a tutorial, how-to guides, reference and explanation, following the [Wagtail package guidelines](https://docs.wagtail.org/en/latest/packages/index.html). A change that a site's developer or editor would notice updates the page it belongs to; a new page is added to `docs/README.md`. Links from the README are full GitHub URLs, so they work on PyPI.
+
 ## Writing tests
 
 There is a simple test app in `tests/`. Write your test modules there alongside the existing files.

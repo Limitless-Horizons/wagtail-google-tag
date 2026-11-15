@@ -1,6 +1,6 @@
 [project]
 name = "wagtail-google-tag"
-version = "0.3.0"
+version = "0.4.0"
 description = "Google tag configuration UI (GA4) for Wagtail: per-site settings, Consent Mode defaults and click events, set up in the Wagtail admin."
 readme = "README.md"
 license = "BSD-3-Clause"
@@ -40,7 +40,7 @@ dependencies = [
 Homepage = "https://github.com/Limitless-Horizons/wagtail-google-tag"
 Repository = "https://github.com/Limitless-Horizons/wagtail-google-tag"
 Changelog = "https://github.com/Limitless-Horizons/wagtail-google-tag/blob/main/CHANGELOG.md"
-Documentation = "https://github.com/Limitless-Horizons/wagtail-google-tag/blob/main/README.md"
+Documentation = "https://github.com/Limitless-Horizons/wagtail-google-tag/blob/main/docs/README.md"
 Issues = "https://github.com/Limitless-Horizons/wagtail-google-tag/issues"
 # Add funding link if needed.
 # Funding = "https://github.com/Limitless-Horizons/wagtail-google-tag"

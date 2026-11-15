@@ -39,8 +39,23 @@ src/wagtail_google_tag/       # Package source code
 src/wagtail_google_tag/test/  # Django test app with settings, URLs
 tests/                     # Test modules (pytest)
 demo/                      # Demo Wagtail site for development
+docs/                      # Documentation (see below)
 .github/workflows/         # CI: linting, tests, nightly builds, publishing
 ```
+
+## Documentation
+
+The README has the basics only: purpose, "Progress so far" (the list of key features, kept current), requirements, installation, and links. Everything else is in `docs/`, in the four kinds the Wagtail guidelines recommend:
+
+```
+docs/tutorial/      # Learning by doing: from install to a first result
+docs/how-to/        # One task per page
+docs/reference/     # Settings, template tag, script API, HTML attributes, permissions
+docs/explanation/   # How it works and why
+docs/README.md      # The index of all of the above
+```
+
+A change that a site's developer or editor would notice updates the page it belongs to, `docs/README.md` if a page is added, and "Progress so far" if it's a key feature. Links from the README are full GitHub URLs, so they work on PyPI; links between pages in `docs/` are relative.
 
 ## Guidelines
 

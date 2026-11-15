@@ -253,6 +253,34 @@ const userIds = (window) =>
     .filter(([command]) => command === 'set')
     .map(([, values]) => values.user_id);
 
+test("a page location from the template is set before Google's tag starts", () => {
+  const window = page({
+    ...ENABLED,
+    pageLocation: 'https://example.com/download/',
+  });
+  const commands = calls(window).map(([command, name]) =>
+    command === 'set' ? `set ${name}` : command,
+  );
+  assert.deepEqual(commands, ['consent', 'consent', 'set page_location', 'js']);
+  assert.deepEqual(
+    calls(window).find(([command]) => command === 'set'),
+    ['set', 'page_location', 'https://example.com/download/'],
+  );
+});
+
+test('no page location is set unless the template gave one', () => {
+  const window = page(ENABLED);
+  assert.equal(
+    calls(window).some(([command]) => command === 'set'),
+    false,
+  );
+});
+
+test('a page location does nothing when the tag is not loaded', () => {
+  const window = page({ id: null, pageLocation: 'https://example.com/x/' });
+  assert.deepEqual(calls(window), []);
+});
+
 test('user() sets the User-ID, and user(null) clears it', () => {
   const window = page(ENABLED);
   window.wagtailGoogleTag.user('lead-123');
