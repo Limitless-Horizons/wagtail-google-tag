@@ -59,10 +59,14 @@ def consent_defaults(site_settings):
     return defaults
 
 
-def tag_config(context):
+def tag_config(context, page_location=None):
     """The browser script's configuration. "id" is None when the tag doesn't
     load: no measurement ID, a preview, or a visitor with a role the site
-    leaves out of tracking."""
+    leaves out of tracking.
+
+    "pageLocation" is there only when the template gave the tag an address to
+    report in place of the browser's. Google requires a full URL, so a path
+    is completed from the request."""
     request = context.get("request")
     if request is None:
         return {"id": None}
@@ -75,9 +79,12 @@ def tag_config(context):
     ):
         return {"id": None}
 
-    return {
+    config = {
         "id": site_settings.measurement_id,
         "consent": consent_defaults(site_settings),
         "ads": site_settings.uses_google_ads,
         "contactLinks": site_settings.track_contact_links,
     }
+    if page_location:
+        config["pageLocation"] = request.build_absolute_uri(str(page_location))
+    return config

@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-15
+
+### Added
+
+- `{% google_tag page_location=... %}` sets the address Google Analytics records for a page, in place of the browser's, for the page view and every event on it. It's for a page whose own address holds a secret, such as a signed download or unsubscribe link. A path is completed to a full URL; without the argument nothing changes.
+- A how-to, "Keep secrets out of page addresses", covering the argument and the referrer header that goes with it.
+- Reference pages for the template tag, the script API, and the HTML attributes and events, and a note of the permission for the settings screen.
+
+### Changed
+
+- The documentation follows Wagtail's guidelines for packages. The README keeps the basics; the rest is in `docs/`, as a tutorial, how-to guides, reference and explanation. Nothing was removed.
+
 ## [0.3.0] - 2026-11-13
 
 ### Added
@@ -74,7 +86,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Click events from `data-google-tag-event` and `data-google-tag-params`, and `contact_link_click` for email and phone links.
 - Support for Wagtail 7.4, 8.0 and 8.1.
 
-[Unreleased]: https://github.com/Limitless-Horizons/wagtail-google-tag/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/Limitless-Horizons/wagtail-google-tag/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/Limitless-Horizons/wagtail-google-tag/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/Limitless-Horizons/wagtail-google-tag/compare/v0.2.3...v0.3.0
 [0.2.3]: https://github.com/Limitless-Horizons/wagtail-google-tag/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/Limitless-Horizons/wagtail-google-tag/compare/v0.2.1...v0.2.2

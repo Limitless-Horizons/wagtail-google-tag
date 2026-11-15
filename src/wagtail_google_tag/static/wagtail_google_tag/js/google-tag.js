@@ -20,6 +20,10 @@
  * Google's tag is installed the way Google documents it now: its script from
  * gtm.js and no "config" command, which is deprecated. Google's tag sends the
  * page view itself, and parameters go on events only.
+ *
+ * One thing can be set for the whole page: the address Google Analytics
+ * records for it ({% google_tag page_location=... %}), for a page whose real
+ * address holds something Google shouldn't get, such as a signed link.
  */
 (() => {
   if (window.wagtailGoogleTag) return;
@@ -37,6 +41,9 @@
   if (enabled) {
     window.gtag = gtag;
     config.consent.forEach((defaults) => gtag('consent', 'default', defaults));
+    // The page's address as Google Analytics should record it, when the
+    // template gave one. Queued ahead of 'js' so the page view has it too.
+    if (config.pageLocation) gtag('set', 'page_location', config.pageLocation);
     gtag('js', new Date());
 
     const script = document.createElement('script');

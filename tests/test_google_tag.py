@@ -306,9 +306,46 @@ def test_config_has_no_page_view_parameters(client, tag_settings, plain_page):
     assert set(config) == {"id", "consent", "ads", "contactLinks"}
 
 
-def test_template_tag_takes_no_parameters(tag_settings):
+def test_template_tag_takes_no_event_parameters(tag_settings):
     with pytest.raises(TemplateSyntaxError):
         render('{% google_tag content_group="Not found" %}', anonymous_request())
+
+
+# The address Google Analytics records for the page
+
+
+def test_page_location_is_the_browsers_own_unless_given(tag_settings):
+    request = anonymous_request("/download/secret-token/")
+    assert "pageLocation" not in config_in(render("{% google_tag %}", request))
+    for empty in ("", None):
+        html = render(
+            "{% google_tag page_location=location %}", request, location=empty
+        )
+        assert "pageLocation" not in config_in(html)
+    # A variable the view never set is empty too.
+    html = render("{% google_tag page_location=never_set %}", request)
+    assert "pageLocation" not in config_in(html)
+
+
+def test_page_location_path_becomes_a_full_address(tag_settings):
+    request = anonymous_request("/download/secret-token/")
+    html = render('{% google_tag page_location="/download/" %}', request)
+    assert config_in(html)["pageLocation"] == "http://testserver/download/"
+    assert "secret-token" not in html
+
+
+def test_page_location_full_address_is_kept(tag_settings):
+    html = render(
+        "{% google_tag page_location=location %}",
+        anonymous_request("/download/secret-token/"),
+        location="https://example.com/download/?step=2",
+    )
+    assert config_in(html)["pageLocation"] == "https://example.com/download/?step=2"
+
+
+def test_page_location_is_left_out_when_the_tag_does_not_load():
+    html = render('{% google_tag page_location="/download/" %}', anonymous_request())
+    assert config_in(html) == {"id": None}
 
 
 def test_tag_renders_without_a_page(tag_settings):
